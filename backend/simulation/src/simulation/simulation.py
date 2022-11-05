@@ -131,10 +131,6 @@ class Simulator:
         self.kill_event.set()
         self.is_stopped = True
 
-sim = Simulator()
-sim.start([Body(1, 2, 3, 4, 5, 6)])
-sim.stop()
-
 '''
 G = 6.67e-11                 
 Ms = 2.0e30         
