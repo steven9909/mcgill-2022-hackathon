@@ -1,7 +1,8 @@
 # Simulations and Bodies
 
-## Usage
+## Requirements
 
 ```
+pip install -r requirements.txt
 source env.sh
 ```
