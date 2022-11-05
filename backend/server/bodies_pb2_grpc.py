@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import bodies_pb2 as bodies__pb2
+import server.bodies_pb2 as bodies__pb2
 
 
 class UnaryStub(object):

@@ -1,6 +1,6 @@
 from server.simulation.body import Body
 from server.simulation.database.redis import RedisDb
-from typing import List
+from typing import List, Optional
 import numpy as np
 import threading
 
@@ -92,6 +92,9 @@ class Simulator:
 
             if self.kill_event.is_set():
                 break
+            
+            if len(self.bodies) <= 1:
+                self.unpause_event.clear()
 
             self.redis.publish_next(self._simulate(self.bodies, d_t))
             
@@ -120,6 +123,22 @@ class Simulator:
 
         self.bodies.append(body)
 
+        self.resume()
+
+    def update_body(self, id: int, p_x: Optional[float], p_y: Optional[float], v_x: Optional[float], v_y: Optional[float]):
+        if self.is_stopped or not self.is_started:
+            return
+        
+        self.pause()
+
+        for body in self.bodies:
+            if body.id == id:
+                body.pos[0] = p_x if p_x is not None else body.pos[0]
+                body.pos[1] = p_y if p_y is not None else body.pos[1]
+                body.vel[0] = v_x if v_x is not None else body.vel[0]
+                body.vel[1] = v_y if v_y is not None else body.vel[1]
+                break
+        
         self.resume()
 
     def remove_body(self, id: int):
