@@ -43,13 +43,11 @@ class BodiesService(pb2_grpc.UnaryServicer):
 
     def UpdateBody(self, request, context):
         self.simulator.update_body(
-            Body(
-                request.id,
-                request.p_x,
-                request.p_y,
-                request.v_x,
-                request.v_y
-            )
+            request.id,
+            request.p_x,
+            request.p_y,
+            request.v_x,
+            request.v_y
         )
         result = {'received': True}
         return pb2.Response(**result)
