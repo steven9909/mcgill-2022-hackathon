@@ -2,9 +2,8 @@ import grpc
 
 import grpc
 from concurrent import futures
-import simulation.src.gprc.bodies_pb2_grpc as pb2_grpc
-import simulation.src.gprc.bodies_pb2 as pb2
-
+import simulation.src.server.bodies_pb2_grpc as pb2_grpc
+import simulation.src.server.bodies_pb2 as pb2
 
 class BodiesService(pb2_grpc.UnaryServicer):
     def __init__(self, *args, **kwargs):
@@ -39,11 +38,10 @@ class BodiesService(pb2_grpc.UnaryServicer):
         return pb2.Response(**result)
     
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     pb2_grpc.add_UnaryServicer_to_server(BodiesService(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
 
-if __name__ == '__main__':
-    serve()
+serve()

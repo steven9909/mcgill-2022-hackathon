@@ -108,7 +108,7 @@ class Simulator:
         
         self.unpause_event.set()
 
-    def add_planet(self, body: Body):
+    def add_body(self, body: Body):
         if self.is_stopped or not self.is_started:
             return
 
@@ -123,6 +123,15 @@ class Simulator:
 
         self.resume()
 
+    def remove_body(self, id: int):
+        if self.is_stopped or not self.is_started:
+            return
+        
+        self.pause()
+
+        self.bodies = [body for body in self.bodies if not body.id == id]
+
+        self.resume()
 
     def stop(self):
         if not self.is_started:
