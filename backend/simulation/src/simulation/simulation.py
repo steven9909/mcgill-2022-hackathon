@@ -1,14 +1,25 @@
-from src.simulation.body import Body
+from simulation.src.simulation.body import Body
+from simulation.src.database.redis import RedisDb
 from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
+import threading
+
 
 class Simulator:
     G = 6.67e-11 # Gravitational constant 
     SIM_T_D = 24.0*60*60 # Default simulation time step
+    
+    bodies = []
+    g_constants = dict()
 
-    @staticmethod
-    def _calculate_next_pos(body: Body, others: List[Body], d_t: int):
+    is_stopped = False
+    is_started = False
+
+    def __init__(self):
+        self.redis = RedisDb()
+
+    def _calculate_next_pos(self, body: Body, others: List[Body], d_t: int):
         """
         Calculates next position and velocity of body taking into account others.
         This performs all calculations, regardless of whether the effect of other bodies is neglible or not.
@@ -30,7 +41,7 @@ class Simulator:
 
                 r = (diff[0]**2 + diff[1]**2) ** 1.5
             
-                force = -(Simulator.G * body.mass * other.mass / r) * diff
+                force = -(self.g_constants[(other.id, body.id)] / r) * diff
                 resultant_force += force
         
         final_vel = body.vel + resultant_force * d_t / body.mass
@@ -38,8 +49,7 @@ class Simulator:
         
         return (body.id, final_pos, final_vel)
 
-    @staticmethod
-    def _simulate(bodies: List[Body], d_t: int):
+    def _simulate(self, bodies: List[Body], d_t: int, multi_thread: bool = False):
         """
         Simulates one timestep for all bodies
 
@@ -50,20 +60,80 @@ class Simulator:
         next_sim = []
 
         for body in bodies:
-            next_sim.append(Simulator._calculate_next_pos(body, bodies, d_t))
+            next_sim.append(self._calculate_next_pos(body, bodies, d_t))
 
         return next_sim
 
-    @staticmethod
-    def start(d_t = SIM_T_D):
-        """ starts
-        """
-        pass
+    def start(self, bodies: List[Body], d_t = SIM_T_D):
+        if self.is_stopped or self.is_started:
+            return
 
-    @staticmethod
-    def stop():
-        """_summary_
-        """
+        self.is_started = True
+
+        self.bodies = bodies
+
+        self.unpause_event = threading.Event()
+        self.unpause_event.set()
+        
+        self.kill_event = threading.Event()
+
+        self.thread = threading.Thread(name = 'event_thread', target=self._run, args=(d_t, ))
+
+        for i in range(0, len(bodies)):
+            for j in range(i+1, len(bodies)):
+                constant = Simulator.G * bodies[i].mass * bodies[j].mass
+                self.g_constants[(bodies[i].id, bodies[j].id)] = constant
+                self.g_constants[(bodies[j].id, bodies[i].id)] = constant
+        
+        self.thread.start()
+
+    def _run(self, d_t = SIM_T_D):
+        while True:
+            self.unpause_event.wait()
+
+            if self.kill_event.is_set():
+                break
+
+            self.redis.publish_next(self._simulate(self.bodies, d_t))
+            
+    def pause(self):
+        if self.is_stopped or not self.is_started:
+            return
+
+        self.unpause_event.clear()
+
+    def resume(self):
+        if self.is_stopped or not self.is_started:
+            return
+        
+        self.unpause_event.set()
+
+    def add_planet(self, body: Body):
+        if self.is_stopped or not self.is_started:
+            return
+
+        self.pause()
+
+        for other in self.bodies:
+            constant = Simulator.G * other.mass * body.mass
+            self.g_constants[(body.id, other.id)] = constant
+            self.g_constants[(other.id, body.id)] = constant
+
+        self.bodies.append(body)
+
+        self.resume()
+
+
+    def stop(self):
+        if not self.is_started:
+            return
+
+        self.kill_event.set()
+        self.is_stopped = True
+
+sim = Simulator()
+sim.start([Body(1, 2, 3, 4, 5, 6)])
+sim.stop()
 
 '''
 G = 6.67e-11                 
@@ -87,9 +157,11 @@ xelist,yelist = [],[]
 xmlist, ymlist = [], []
 xslist,yslist = [],[]
 
+sim = Simulator()
+
 while t < 687*days_in_sec:
 
-    next_sim = Simulator._simulate([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs), Body(3, Mm, xm, ym, xvm, yvm)], d_t)
+    next_sim = sim.start([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs), Body(3, Mm, xm, ym, xvm, yvm)], d_t)
  
     xe = next_sim[0][1][0]
     ye = next_sim[0][1][1]
@@ -116,10 +188,10 @@ while t < 687*days_in_sec:
     yslist.append(yvs)
   
     t += d_t
-    
-print(xslist)
+
 plt.plot(xelist,yelist,'r',lw=2)
 plt.plot(xmlist,ymlist,'g',lw=2)
 plt.axis('equal')
 plt.show()
+
 '''
