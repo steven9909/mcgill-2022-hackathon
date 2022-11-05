@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from get import get_route
-from post import post_route
-from delete import delete_route
-from put import put_route
+from routes.get import get_route
+from routes.post import post_route
+from routes.delete import delete_route
+from routes.put import put_route
 
 app = FastAPI()
 
