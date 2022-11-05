@@ -6,7 +6,7 @@ Project members:
 
   Jintian Huang
   
-  Anurag Vindoh
+  Anurag Vinodh
   
   Steven Hyun
   
