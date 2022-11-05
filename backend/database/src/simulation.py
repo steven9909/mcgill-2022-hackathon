@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from body import (
+from database.src.body import (
     Body,
     Vec2,
     create_body,
@@ -12,7 +12,7 @@ from body import (
     fetch_body,
     update_body,
 )
-from common import client
+from database.src.common import client
 
 
 class Simulation(BaseModel):
