@@ -2,8 +2,8 @@ import grpc
 
 import grpc
 from concurrent import futures
-import simulation.src.server.bodies_pb2_grpc as pb2_grpc
-import simulation.src.server.bodies_pb2 as pb2
+import server.bodies_pb2_grpc as pb2_grpc
+import server.bodies_pb2 as pb2
 
 class BodiesService(pb2_grpc.UnaryServicer):
     def __init__(self, *args, **kwargs):

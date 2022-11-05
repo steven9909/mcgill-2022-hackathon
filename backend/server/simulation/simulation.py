@@ -1,8 +1,7 @@
-from simulation.src.simulation.body import Body
-from simulation.src.database.redis import RedisDb
+from server.simulation.body import Body
+from server.simulation.database.redis import RedisDb
 from typing import List
 import numpy as np
-import matplotlib.pyplot as plt
 import threading
 
 
