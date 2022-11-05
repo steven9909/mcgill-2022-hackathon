@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from database.src.common import client
+from database.common import client
 
 
 class Vec2(BaseModel):
