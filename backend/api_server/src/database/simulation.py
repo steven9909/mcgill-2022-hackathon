@@ -92,7 +92,7 @@ def update_simulation(id: int, name: Optional[str] = None) -> Simulation:
         data["updated_at"] = "now()"
 
     return Simulation(
-        **client.table("simulation").update({}).eq("id", id).execute().data[0]
+        **client.table("simulation").update(data).eq("id", id).execute().data[0]
     )
 
 
