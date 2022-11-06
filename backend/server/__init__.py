@@ -1,6 +1,4 @@
 import grpc
-
-import grpc
 from concurrent import futures
 import server.bodies_pb2_grpc as pb2_grpc
 import server.bodies_pb2 as pb2
