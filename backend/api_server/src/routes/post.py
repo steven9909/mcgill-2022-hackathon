@@ -3,19 +3,24 @@ import os
 import grpc
 import simulation_pb2_grpc
 import simulation_pb2
+from models.body import Body
+from database.simulation import fetch_simulations, fetch_simulation, create_simulation
+
 from fastapi import APIRouter
 
 post_route = APIRouter()
 
 
 @post_route.post("/simulations/")
-async def post_simulations(sim_data):
-    return {"sim": "created"}
+async def post_simulations(sim_name: str):
+    ret_val = create_simulation(sim_name)
+    return ret_val
 
-
-@post_route.post("/simulations/{sim_id}/bodys")
-async def post_simulations_bodys(sim_id, body_data):
-    return {"sim_id": sim_id, "bodies": "created"}
+@post_route.post("/simulations/{sim_id}/body")
+async def post_simulations_body(sim_id, body: Body):
+    sim = fetch_simulation(sim_id)
+    new_body = sim.create_body(body.mass,body.initial_position,body.initial_velocity,body.model_path)
+    return {"body": new_body}
 
 
 @post_route.post("/simulator/start")

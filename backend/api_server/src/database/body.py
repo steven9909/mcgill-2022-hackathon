@@ -92,7 +92,7 @@ def update_body(
         data["initial_velocity"] = initial_velocity.dict()
 
     if model_path is not None:
-        data["model_path"] = model_path.dict()
+        data["model_path"] = model_path
 
     if data:
         data["updated_at"] = "now()"

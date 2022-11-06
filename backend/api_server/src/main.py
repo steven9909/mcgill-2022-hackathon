@@ -12,7 +12,6 @@ app.include_router(post_route)
 app.include_router(delete_route)
 app.include_router(put_route)
 
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
