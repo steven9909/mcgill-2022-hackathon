@@ -1,14 +1,14 @@
-from server.simulation.body import Body
-from server.simulation.database.redis import RedisDb
+from simulation.body import Body
+from simulation.database.redis import RedisDb
 from typing import List, Optional
 import numpy as np
 import threading
 
 
 class Simulator:
-    G = 6.67e-11 # Gravitational constant 
-    SIM_T_D = 24.0*60*60 # Default simulation time step
-    
+    G = 6.67e-11  # Gravitational constant
+    SIM_T_D = 24.0 * 60 * 60  # Default simulation time step
+
     bodies = []
     g_constants = dict()
 
@@ -38,14 +38,14 @@ class Simulator:
             if not other.id == body.id:
                 diff = body.pos - other.pos
 
-                r = (diff[0]**2 + diff[1]**2) ** 1.5
-            
+                r = (diff[0] ** 2 + diff[1] ** 2) ** 1.5
+
                 force = -(self.g_constants[(other.id, body.id)] / r) * diff
                 resultant_force += force
-        
+
         final_vel = body.vel + resultant_force * d_t / body.mass
         final_pos = body.pos + final_vel * d_t
-        
+
         return (body.id, final_pos, final_vel)
 
     def _simulate(self, bodies: List[Body], d_t: int, multi_thread: bool = False):
@@ -63,7 +63,7 @@ class Simulator:
 
         return next_sim
 
-    def start(self, bodies: List[Body], d_t = SIM_T_D):
+    def start(self, bodies: List[Body], d_t=SIM_T_D):
         if self.is_stopped or self.is_started:
             return
 
@@ -73,31 +73,33 @@ class Simulator:
 
         self.unpause_event = threading.Event()
         self.unpause_event.set()
-        
+
         self.kill_event = threading.Event()
 
-        self.thread = threading.Thread(name = 'event_thread', target=self._run, args=(d_t, ))
+        self.thread = threading.Thread(
+            name="event_thread", target=self._run, args=(d_t,)
+        )
 
         for i in range(0, len(bodies)):
-            for j in range(i+1, len(bodies)):
+            for j in range(i + 1, len(bodies)):
                 constant = Simulator.G * bodies[i].mass * bodies[j].mass
                 self.g_constants[(bodies[i].id, bodies[j].id)] = constant
                 self.g_constants[(bodies[j].id, bodies[i].id)] = constant
-        
+
         self.thread.start()
 
-    def _run(self, d_t = SIM_T_D):
+    def _run(self, d_t=SIM_T_D):
         while True:
             self.unpause_event.wait()
 
             if self.kill_event.is_set():
                 break
-            
+
             if len(self.bodies) <= 1:
                 self.unpause_event.clear()
 
             self.redis.publish_next(self._simulate(self.bodies, d_t))
-            
+
     def pause(self):
         if self.is_stopped or not self.is_started:
             return
@@ -107,7 +109,7 @@ class Simulator:
     def resume(self):
         if self.is_stopped or not self.is_started:
             return
-        
+
         self.unpause_event.set()
 
     def add_body(self, body: Body):
@@ -125,10 +127,17 @@ class Simulator:
 
         self.resume()
 
-    def update_body(self, id: int, p_x: Optional[float], p_y: Optional[float], v_x: Optional[float], v_y: Optional[float]):
+    def update_body(
+        self,
+        id: int,
+        p_x: Optional[float],
+        p_y: Optional[float],
+        v_x: Optional[float],
+        v_y: Optional[float],
+    ):
         if self.is_stopped or not self.is_started:
             return
-        
+
         self.pause()
 
         for body in self.bodies:
@@ -138,13 +147,13 @@ class Simulator:
                 body.vel[0] = v_x if v_x is not None else body.vel[0]
                 body.vel[1] = v_y if v_y is not None else body.vel[1]
                 break
-        
+
         self.resume()
 
     def remove_body(self, id: int):
         if self.is_stopped or not self.is_started:
             return
-        
+
         self.pause()
 
         self.bodies = [body for body in self.bodies if not body.id == id]
@@ -158,7 +167,8 @@ class Simulator:
         self.kill_event.set()
         self.is_stopped = True
 
-'''
+
+"""
 G = 6.67e-11                 
 Ms = 2.0e30         
 Mm = 6.39e23
@@ -217,4 +227,4 @@ plt.plot(xmlist,ymlist,'g',lw=2)
 plt.axis('equal')
 plt.show()
 
-'''
+"""
