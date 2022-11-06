@@ -1,7 +1,7 @@
-from sim_server.src.simulation.body import Body
-from sim_server.src.simulation.database.redis import RedisDb
-from sim_server.src.simulation.ga.population import Population
-from sim_server.src.simulation.ga.chromosome import Chromosome
+from simulation.body import Body
+from simulation.database.redis import RedisDb
+from simulation.ga.population import Population
+from simulation.ga.chromosome import Chromosome
 from typing import List, Optional
 import random
 import numpy as np
@@ -14,7 +14,6 @@ class Simulator:
     G = 6.67e-11  # Gravitational constant
     SIM_T_D = 240  # Default simulation time step
 
-    bodies = []
     g_constants = dict()
 
     is_stopped = False
@@ -25,6 +24,7 @@ class Simulator:
         self.population = None
         self.start_time = None
         self.population_bodies = None
+        self.bodies = []
         self.player_body = None
         self.d_t = Simulator.SIM_T_D
 
@@ -57,7 +57,7 @@ class Simulator:
 
         final_vel = body.vel + resultant_force * d_t / body.mass
         final_pos = body.pos + final_vel * d_t
-        
+
         return (body.id, final_pos, final_vel)
 
     def _simulate_agents(self, bodies: List[Body]):
@@ -68,17 +68,19 @@ class Simulator:
         to_calculate = self.population_bodies
         if self.player_body is not None:
             to_calculate.append(self.player_body)
-            
+
         for i, agent_body in enumerate(self.population_bodies):
             next_pos = self._calculate_next_pos(agent_body, bodies, self.d_t)
             x = next_pos[1][0]
             y = next_pos[1][1]
             if i < len(self.population.chromosomes):
-                self.population.chromosomes[i].update_fitness(x, self.end_x, y, self.end_y)
+                self.population.chromosomes[i].update_fitness(
+                    x, self.end_x, y, self.end_y
+                )
             agent_body.pos = next_pos[1]
             agent_body.vel = next_pos[2]
             next_sim.append(next_pos)
-        
+
         return next_sim
 
     def _simulate_bodies(self, bodies: List[Body]):
@@ -93,7 +95,7 @@ class Simulator:
         for body in bodies:
             next_body = self._calculate_next_pos(body, bodies, self.d_t)
             next_sim.append(next_body)
-         
+
             body.pos = next_body[1]
             body.vel = next_body[2]
 
@@ -108,17 +110,16 @@ class Simulator:
 
         self.d_t = d_t
 
-        self.bodies = bodies
+        if self.bodies is None or len(self.bodies) == 0:
+            self.bodies = bodies
 
         self.unpause_event = threading.Event()
         self.unpause_event.set()
 
         self.kill_event = threading.Event()
 
-        self.thread = threading.Thread(
-            name="event_thread", target=self._run
-        )
-
+        self.thread = threading.Thread(name="event_thread", target=self._run)
+        print("Started")
         for i in range(0, len(bodies)):
             for j in range(i + 1, len(bodies)):
                 constant = Simulator.G * bodies[i].mass * bodies[j].mass
@@ -128,32 +129,39 @@ class Simulator:
         self.thread.start()
 
     def _run(self):
+        print("run")
         while True:
+            print("updating")
             self.unpause_event.wait()
-
+            print("wait finished")
             if self.kill_event.is_set():
                 break
-            
+
             if len(self.bodies) <= 1 and self.population is None:
                 self.unpause_event.clear()
+                print("not enough")
 
-            if self.start_time is not None and (time.time_ns() - self.start_time)//1000000000 > self.timeout:
+            if (
+                self.start_time is not None
+                and (time.time_ns() - self.start_time) // 1000000000 > self.timeout
+            ):
+                print("resetting")
                 self._reset_population()
                 continue
-    
+            # print("running")
             self.redis.publish_next_bodies(self._simulate_bodies(self.bodies))
             self.redis.publish_next_agents(self._simulate_agents(self.bodies))
 
     def pause(self):
         if self.is_stopped or not self.is_started:
             return
-
+        print("pausing")
         self.unpause_event.clear()
 
     def resume(self):
         if self.is_stopped or not self.is_started:
             return
-
+        print("resuming")
         self.unpause_event.set()
 
     def _reset_population(self):
@@ -162,19 +170,36 @@ class Simulator:
 
         self.population_bodies.clear()
         for i, chromosome in enumerate(self.population.chromosomes):
-            v_x = (chromosome.force * math.cos(chromosome.angle) / self.agent_mass) * self.d_t
-            v_y = (chromosome.force * math.sin(chromosome.angle) / self.agent_mass) * self.d_t
+            v_x = (
+                chromosome.force * math.cos(chromosome.angle) / self.agent_mass
+            ) * self.d_t
+            v_y = (
+                chromosome.force * math.sin(chromosome.angle) / self.agent_mass
+            ) * self.d_t
 
-            self.population_bodies.append(Body(-2-i, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
+            self.population_bodies.append(
+                Body(-2 - i, self.agent_mass, self.start_x, self.start_y, v_x, v_y)
+            )
 
         self.start_time = time.time_ns()
 
         self.resume()
 
-    def add_player(self, start_x, start_y, end_x, end_y, force: float, angle: float, timeout = 120, agent_mass = 50, auto_resume: bool = False):
+    def add_player(
+        self,
+        start_x,
+        start_y,
+        end_x,
+        end_y,
+        force: float,
+        angle: float,
+        timeout=120,
+        agent_mass=50,
+        auto_resume: bool = False,
+    ):
         if self.is_stopped:
             return
-        self.pause() 
+        self.pause()
 
         self.start_x = start_x
         self.start_y = start_y
@@ -190,7 +215,17 @@ class Simulator:
         if auto_resume:
             self.resume()
 
-    def initialize_population(self, start_x, start_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50, auto_resume: bool = False):
+    def initialize_population(
+        self,
+        start_x,
+        start_y,
+        end_x,
+        end_y,
+        timeout=120,
+        num_populations=100,
+        agent_mass=50,
+        auto_resume: bool = False,
+    ):
         if self.is_stopped:
             return
         self.pause()
@@ -202,16 +237,32 @@ class Simulator:
         self.timeout = timeout
         self.agent_mass = agent_mass
 
-        chromosomes = [Chromosome(random.random() * Chromosome.FORCE_LIMIT, random.random() * 2 * math.pi, start_x, end_x, start_y, end_y) for _ in range(num_populations)]
+        chromosomes = [
+            Chromosome(
+                random.random() * Chromosome.FORCE_LIMIT,
+                random.random() * 2 * math.pi,
+                start_x,
+                end_x,
+                start_y,
+                end_y,
+            )
+            for _ in range(num_populations)
+        ]
 
         self.population = Population(chromosomes, start_x, start_y, end_x, end_y)
 
         self.population_bodies = []
         for i, chromosome in enumerate(chromosomes):
-            v_x = (chromosome.force * math.cos(chromosome.angle) / agent_mass) * self.d_t
-            v_y = (chromosome.force * math.sin(chromosome.angle) / agent_mass) * self.d_t
+            v_x = (
+                chromosome.force * math.cos(chromosome.angle) / agent_mass
+            ) * self.d_t
+            v_y = (
+                chromosome.force * math.sin(chromosome.angle) / agent_mass
+            ) * self.d_t
 
-            self.population_bodies.append(Body(-2-i, agent_mass, start_x, start_y, v_x, v_y))
+            self.population_bodies.append(
+                Body(-2 - i, agent_mass, start_x, start_y, v_x, v_y)
+            )
 
         for body in self.bodies:
             constant = Simulator.G * agent_mass * body.mass
@@ -241,6 +292,7 @@ class Simulator:
             self.g_constants[(-1, body.id)] = constant
 
         self.bodies.append(body)
+        print("Body appended ", len(self.bodies))
 
         if self.is_started:
             self.resume()
@@ -281,7 +333,7 @@ class Simulator:
     def stop(self):
         if not self.is_started:
             return
-            
+        print("stopping")
         self.kill_event.set()
         self.resume()
         self.population = None
@@ -292,24 +344,31 @@ class Simulator:
         self.g_constants.clear()
         self.bodies.clear()
 
-Ms = 2.0e30         
-Mm = 6.39e23
-Me = 5.972e24   
 
-xe, ye = 1.0167*1.5e11, 0
-xve, yve = 0, 29290
+# Ms = 2.0e30
+# Mm = 6.39e23
+# Me = 5.972e24
 
-xm, ym = 1.5*1.5e11, 0
-xvm, yvm = 0, 24070
+# xe, ye = 1.0167 * 1.5e11, 0
+# xve, yve = 0, 29290
 
-xs,ys = 0,0
-xvs,yvs = 0,0
+# xm, ym = 1.5 * 1.5e11, 0
+# xvm, yvm = 0, 24070
 
-sim = Simulator()
-sim.start([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs), Body(3, Mm, xm, ym, xvm, yvm)])
-sim.add_player(0, 0, 100, 100, 50, 2, timeout=3)
+# xs, ys = 0, 0
+# xvs, yvs = 0, 0
 
-sim.resume()
+# sim = Simulator()
+# sim.start(
+#     [
+#         Body(1, Me, xe, ye, xve, yve),
+#         Body(2, Ms, xs, ys, xvs, yvs),
+#         Body(3, Mm, xm, ym, xvm, yvm),
+#     ]
+# )
+# sim.add_player(0, 0, 100, 100, 50, 2, timeout=3)
+
+# sim.resume()
 """
 G = 6.67e-11                 
 Ms = 2.0e30         

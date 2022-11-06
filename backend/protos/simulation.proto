@@ -7,8 +7,27 @@ service Simulation {
     rpc Stop(EmptyParam) returns (Response) {}
     rpc Pause(EmptyParam) returns (Response) {}
     rpc CreateBody(CreateBodyParam) returns (Response) {}
+    rpc CreatePlayer(CreatePlayerParam) returns (Response) {}
+    rpc InitializePopulation(CreatePopulationParam) returns (Response) {}
     rpc UpdateBody(UpdateBodyParam) returns (Response) {}
     rpc DeleteBody(DeleteBodyParam) returns (Response) {}
+}
+
+message CreatePopulationParam {
+    float start_x = 2;
+    float start_y = 3;
+    float end_x = 4;
+    float end_y = 5;
+}
+
+message CreatePlayerParam {
+    int32 id = 1;
+    float start_x = 2;
+    float start_y = 3;
+    float end_x = 4;
+    float end_y = 5;
+    float force = 6;
+    float angle = 7;
 }
 
 message CreateBodyParam {

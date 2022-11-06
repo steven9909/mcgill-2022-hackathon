@@ -26,6 +26,7 @@ class SimulationService(pb2_grpc.SimulationServicer):
         return pb2.Response(**result)
 
     def CreateBody(self, request, context):
+        print("Body added", request)
         self.simulator.add_body(
             Body(
                 request.id,
