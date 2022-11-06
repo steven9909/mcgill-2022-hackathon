@@ -1,1 +1,1 @@
-uvicorn index:app --app-dir api/src
+uvicorn index:app --app-dir api/src --reload
