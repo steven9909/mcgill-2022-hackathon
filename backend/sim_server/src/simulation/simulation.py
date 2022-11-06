@@ -126,9 +126,11 @@ class Simulator:
 
         self.unpause_event.set()
 
-    def initialize_population(self, starting_x, starting_y, end_x, end_y, timeout = 120, num_populations = 100, agent_weight = 50):
+    def initialize_population(self, starting_x, starting_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50):
         if self.is_stopped or not self.is_started:
             return
+
+        self.pause()
 
         self.end_x = end_x
         self.end_y = end_y
@@ -139,10 +141,15 @@ class Simulator:
 
         self.population_bodies = []
         for chromosome in chromosomes:
-            v_x = (chromosome.force * math.cos(chromosome.angle) / agent_weight) * self.d_t
-            v_y = (chromosome.force * math.sin(chromosome.angle) / agent_weight) * self.d_t
+            v_x = (chromosome.force * math.cos(chromosome.angle) / agent_mass) * self.d_t
+            v_y = (chromosome.force * math.sin(chromosome.angle) / agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-1, agent_weight, starting_x, starting_y, v_x, v_y))
+            self.population_bodies.append(Body(-1, agent_mass, starting_x, starting_y, v_x, v_y))
+
+        for body in self.bodies:
+            constant = Simulator.G * agent_mass * body.mass
+            self.g_constants[(-1, body.id)] = constant
+            self.g_constants[(body.id, -1)] = constant
 
         self.resume()
 
