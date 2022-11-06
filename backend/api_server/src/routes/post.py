@@ -16,16 +16,34 @@ async def post_simulations(sim_name: str):
     ret_val = create_simulation(sim_name)
     return ret_val
 
+
 @post_route.post("/simulations/{sim_id}/body")
 async def post_simulations_body(sim_id, body: Body):
     sim = fetch_simulation(sim_id)
-    new_body = sim.create_body(body.mass,body.initial_position,body.initial_velocity,body.model_path)
+    new_body = sim.create_body(
+        body.mass, body.initial_position, body.initial_velocity, body.model_path
+    )
+
+    with grpc.insecure_channel("localhost:50051") as channel:
+        stub = simulation_pb2_grpc.SimulationStub(channel)
+        assert stub.CreateBody(
+            simulation_pb2.CreateBodyParam(
+                id=new_body.id,
+                mass=new_body.mass,
+                p_x=new_body.initial_position.x,
+                p_y=new_body.initial_position.y,
+                v_x=new_body.initial_velocity.x,
+                v_y=new_body.initial_velocity.y,
+            )
+        )
     return {"body": new_body}
 
 
 @post_route.post("/simulator/start")
 async def post_simulation_start():
-    with grpc.insecure_channel(os.environ.get("SIM_SERVER_URL")) as channel:
+    print("HASHASUHDOASIDNOSAINDOSI")
+    print(os.environ.get("SIM_SERVER_URL"))
+    with grpc.insecure_channel("localhost:50051") as channel:
         stub = simulation_pb2_grpc.SimulationStub(channel)
         assert stub.Start(simulation_pb2.EmptyParam())
 

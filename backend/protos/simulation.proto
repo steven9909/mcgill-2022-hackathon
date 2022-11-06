@@ -13,7 +13,7 @@ service Simulation {
 
 message CreateBodyParam {
     int32 id = 1;
-    int32 mass = 2;
+    float mass = 2;
     float p_x = 3;
     float p_y = 4;
     float v_x = 5;
