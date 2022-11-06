@@ -56,8 +56,12 @@ class Simulator:
     def _simulate_agents(self, bodies: List[Body]):
         next_sim = []
 
-        for agent_body in self.population_bodies:
-            next_sim.append(self._calculate_next_pos(agent_body, bodies, self.d_t))
+        for i, agent_body in enumerate(self.population_bodies):
+            next_pos = self._calculate_next_pos(agent_body, bodies, self.d_t)
+            x = next_pos[1][0]
+            y = next_pos[1][1]
+            self.population.chromosomes[i].update_fitness(x, self.end_x, y, self.end_y)
+            next_sim.append(next_pos)
         
         return next_sim
 
@@ -140,25 +144,25 @@ class Simulator:
             v_x = (chromosome.force * math.cos(chromosome.angle) / self.agent_mass) * self.d_t
             v_y = (chromosome.force * math.sin(chromosome.angle) / self.agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-1, self.agent_mass, self.starting_x, self.starting_y, v_x, v_y))
+            self.population_bodies.append(Body(-1, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
 
         self.start_time = time.time_ns()
         self.resume()
 
-    def initialize_population(self, starting_x, starting_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50):
+    def initialize_population(self, start_x, start_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50):
         if self.is_stopped or not self.is_started:
             return
 
         self.pause()
 
-        self.starting_x = starting_x
-        self.starting_y = starting_y
+        self.start_x = start_x
+        self.start_y = start_y
         self.end_x = end_x
         self.end_y = end_y
         self.timeout = timeout
         self.agent_mass = agent_mass
 
-        chromosomes = [Chromosome(random.random() * Chromosome.FORCE_LIMIT, random.random() * 2 * math.pi) for _ in range(num_populations)]
+        chromosomes = [Chromosome(random.random() * Chromosome.FORCE_LIMIT, random.random() * 2 * math.pi, start_x, end_x, start_y, end_y) for _ in range(num_populations)]
 
         self.population = Population(chromosomes)
 
@@ -167,7 +171,7 @@ class Simulator:
             v_x = (chromosome.force * math.cos(chromosome.angle) / agent_mass) * self.d_t
             v_y = (chromosome.force * math.sin(chromosome.angle) / agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-1, agent_mass, starting_x, starting_y, v_x, v_y))
+            self.population_bodies.append(Body(-1, agent_mass, start_x, start_y, v_x, v_y))
 
         for body in self.bodies:
             constant = Simulator.G * agent_mass * body.mass
