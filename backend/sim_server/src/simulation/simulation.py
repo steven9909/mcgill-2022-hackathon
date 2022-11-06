@@ -8,6 +8,7 @@ import numpy as np
 import threading
 import math
 import time
+import copy
 
 
 class Simulator:
@@ -25,6 +26,7 @@ class Simulator:
         self.start_time = None
         self.population_bodies = None
         self.bodies = []
+        self.init_bodies = []
         self.player_body = None
         self.d_t = Simulator.SIM_T_D
 
@@ -80,7 +82,6 @@ class Simulator:
             agent_body.pos = next_pos[1]
             agent_body.vel = next_pos[2]
             next_sim.append(next_pos)
-
         return next_sim
 
     def _simulate_bodies(self, bodies: List[Body]):
@@ -131,9 +132,8 @@ class Simulator:
     def _run(self):
         print("run")
         while True:
-            print("updating")
             self.unpause_event.wait()
-            print("wait finished")
+
             if self.kill_event.is_set():
                 break
 
@@ -151,6 +151,7 @@ class Simulator:
             # print("running")
             self.redis.publish_next_bodies(self._simulate_bodies(self.bodies))
             self.redis.publish_next_agents(self._simulate_agents(self.bodies))
+        print("stop running")
 
     def pause(self):
         if self.is_stopped or not self.is_started:
@@ -182,6 +183,8 @@ class Simulator:
             )
 
         self.start_time = time.time_ns()
+
+        self.bodies = copy.deepcopy(self.init_bodies)
 
         self.resume()
 
@@ -221,8 +224,8 @@ class Simulator:
         start_y,
         end_x,
         end_y,
-        timeout=120,
-        num_populations=100,
+        timeout=30,
+        num_populations=25,
         agent_mass=50,
         auto_resume: bool = False,
     ):
@@ -280,7 +283,7 @@ class Simulator:
 
         if self.is_started:
             self.pause()
-
+        self.init_bodies.append(copy.deepcopy(body))
         for other in self.bodies:
             constant = Simulator.G * other.mass * body.mass
             self.g_constants[(body.id, other.id)] = constant
@@ -292,7 +295,6 @@ class Simulator:
             self.g_constants[(-1, body.id)] = constant
 
         self.bodies.append(body)
-        print("Body appended ", len(self.bodies))
 
         if self.is_started:
             self.resume()
@@ -331,9 +333,11 @@ class Simulator:
         self.resume()
 
     def stop(self):
+        print("stopping1")
         if not self.is_started:
             return
-        print("stopping")
+        print("stopping2")
+        self.unpause_event.clear()
         self.kill_event.set()
         self.resume()
         self.population = None
@@ -341,6 +345,7 @@ class Simulator:
         self.population_bodies = None
         self.is_stopped = True
         self.is_started = False
+        self.init_bodies.clear()
         self.g_constants.clear()
         self.bodies.clear()
 

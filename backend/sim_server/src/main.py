@@ -4,6 +4,7 @@ import simulation_pb2_grpc as pb2_grpc
 import simulation_pb2 as pb2
 from simulation.simulation import Simulator
 from simulation.body import Body
+from simulation.init_pop import PopBody
 
 
 class SimulationService(pb2_grpc.SimulationServicer):
@@ -36,6 +37,17 @@ class SimulationService(pb2_grpc.SimulationServicer):
                 request.v_x,
                 request.v_y,
             )
+        )
+        result = {"received": True}
+        return pb2.Response(**result)
+
+    def InitializePopulation(self, request, context):
+        self.simulator.initialize_population(
+            request.start_x,
+            request.start_y,
+            request.end_x,
+            request.end_y,
+            auto_resume=True,
         )
         result = {"received": True}
         return pb2.Response(**result)

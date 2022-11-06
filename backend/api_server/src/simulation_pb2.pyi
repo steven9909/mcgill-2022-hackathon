@@ -13,12 +13,42 @@ class CreateBodyParam(_message.Message):
     V_X_FIELD_NUMBER: _ClassVar[int]
     V_Y_FIELD_NUMBER: _ClassVar[int]
     id: int
-    mass: int
+    mass: float
     p_x: float
     p_y: float
     v_x: float
     v_y: float
-    def __init__(self, id: _Optional[int] = ..., mass: _Optional[int] = ..., p_x: _Optional[float] = ..., p_y: _Optional[float] = ..., v_x: _Optional[float] = ..., v_y: _Optional[float] = ...) -> None: ...
+    def __init__(self, id: _Optional[int] = ..., mass: _Optional[float] = ..., p_x: _Optional[float] = ..., p_y: _Optional[float] = ..., v_x: _Optional[float] = ..., v_y: _Optional[float] = ...) -> None: ...
+
+class CreatePlayerParam(_message.Message):
+    __slots__ = ["angle", "end_x", "end_y", "force", "id", "start_x", "start_y"]
+    ANGLE_FIELD_NUMBER: _ClassVar[int]
+    END_X_FIELD_NUMBER: _ClassVar[int]
+    END_Y_FIELD_NUMBER: _ClassVar[int]
+    FORCE_FIELD_NUMBER: _ClassVar[int]
+    ID_FIELD_NUMBER: _ClassVar[int]
+    START_X_FIELD_NUMBER: _ClassVar[int]
+    START_Y_FIELD_NUMBER: _ClassVar[int]
+    angle: float
+    end_x: float
+    end_y: float
+    force: float
+    id: int
+    start_x: float
+    start_y: float
+    def __init__(self, id: _Optional[int] = ..., start_x: _Optional[float] = ..., start_y: _Optional[float] = ..., end_x: _Optional[float] = ..., end_y: _Optional[float] = ..., force: _Optional[float] = ..., angle: _Optional[float] = ...) -> None: ...
+
+class CreatePopulationParam(_message.Message):
+    __slots__ = ["end_x", "end_y", "start_x", "start_y"]
+    END_X_FIELD_NUMBER: _ClassVar[int]
+    END_Y_FIELD_NUMBER: _ClassVar[int]
+    START_X_FIELD_NUMBER: _ClassVar[int]
+    START_Y_FIELD_NUMBER: _ClassVar[int]
+    end_x: float
+    end_y: float
+    start_x: float
+    start_y: float
+    def __init__(self, start_x: _Optional[float] = ..., start_y: _Optional[float] = ..., end_x: _Optional[float] = ..., end_y: _Optional[float] = ...) -> None: ...
 
 class DeleteBodyParam(_message.Message):
     __slots__ = ["id"]

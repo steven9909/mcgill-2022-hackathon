@@ -13,23 +13,27 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10simulation.proto\x12\nsimulation\"_\n\x0f\x43reateBodyParam\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04mass\x18\x02 \x01(\x05\x12\x0b\n\x03p_x\x18\x03 \x01(\x02\x12\x0b\n\x03p_y\x18\x04 \x01(\x02\x12\x0b\n\x03v_x\x18\x05 \x01(\x02\x12\x0b\n\x03v_y\x18\x06 \x01(\x02\"\x1d\n\x0f\x44\x65leteBodyParam\x12\n\n\x02id\x18\x01 \x01(\x05\"\x85\x01\n\x0fUpdateBodyParam\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x10\n\x03p_x\x18\x02 \x01(\x02H\x00\x88\x01\x01\x12\x10\n\x03p_y\x18\x03 \x01(\x02H\x01\x88\x01\x01\x12\x10\n\x03v_x\x18\x04 \x01(\x02H\x02\x88\x01\x01\x12\x10\n\x03v_y\x18\x05 \x01(\x02H\x03\x88\x01\x01\x42\x06\n\x04_p_xB\x06\n\x04_p_yB\x06\n\x04_v_xB\x06\n\x04_v_y\"\x0c\n\nEmptyParam\"\x1c\n\x08Response\x12\x10\n\x08received\x18\x01 \x01(\x08\x32\xff\x02\n\nSimulation\x12\x37\n\x05Start\x12\x16.simulation.EmptyParam\x1a\x14.simulation.Response\"\x00\x12\x36\n\x04Stop\x12\x16.simulation.EmptyParam\x1a\x14.simulation.Response\"\x00\x12\x37\n\x05Pause\x12\x16.simulation.EmptyParam\x1a\x14.simulation.Response\"\x00\x12\x41\n\nCreateBody\x12\x1b.simulation.CreateBodyParam\x1a\x14.simulation.Response\"\x00\x12\x41\n\nUpdateBody\x12\x1b.simulation.UpdateBodyParam\x1a\x14.simulation.Response\"\x00\x12\x41\n\nDeleteBody\x12\x1b.simulation.DeleteBodyParam\x1a\x14.simulation.Response\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10simulation.proto\x12\nsimulation\"W\n\x15\x43reatePopulationParam\x12\x0f\n\x07start_x\x18\x02 \x01(\x02\x12\x0f\n\x07start_y\x18\x03 \x01(\x02\x12\r\n\x05\x65nd_x\x18\x04 \x01(\x02\x12\r\n\x05\x65nd_y\x18\x05 \x01(\x02\"}\n\x11\x43reatePlayerParam\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0f\n\x07start_x\x18\x02 \x01(\x02\x12\x0f\n\x07start_y\x18\x03 \x01(\x02\x12\r\n\x05\x65nd_x\x18\x04 \x01(\x02\x12\r\n\x05\x65nd_y\x18\x05 \x01(\x02\x12\r\n\x05\x66orce\x18\x06 \x01(\x02\x12\r\n\x05\x61ngle\x18\x07 \x01(\x02\"_\n\x0f\x43reateBodyParam\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04mass\x18\x02 \x01(\x02\x12\x0b\n\x03p_x\x18\x03 \x01(\x02\x12\x0b\n\x03p_y\x18\x04 \x01(\x02\x12\x0b\n\x03v_x\x18\x05 \x01(\x02\x12\x0b\n\x03v_y\x18\x06 \x01(\x02\"\x1d\n\x0f\x44\x65leteBodyParam\x12\n\n\x02id\x18\x01 \x01(\x05\"\x85\x01\n\x0fUpdateBodyParam\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x10\n\x03p_x\x18\x02 \x01(\x02H\x00\x88\x01\x01\x12\x10\n\x03p_y\x18\x03 \x01(\x02H\x01\x88\x01\x01\x12\x10\n\x03v_x\x18\x04 \x01(\x02H\x02\x88\x01\x01\x12\x10\n\x03v_y\x18\x05 \x01(\x02H\x03\x88\x01\x01\x42\x06\n\x04_p_xB\x06\n\x04_p_yB\x06\n\x04_v_xB\x06\n\x04_v_y\"\x0c\n\nEmptyParam\"\x1c\n\x08Response\x12\x10\n\x08received\x18\x01 \x01(\x08\x32\x99\x04\n\nSimulation\x12\x37\n\x05Start\x12\x16.simulation.EmptyParam\x1a\x14.simulation.Response\"\x00\x12\x36\n\x04Stop\x12\x16.simulation.EmptyParam\x1a\x14.simulation.Response\"\x00\x12\x37\n\x05Pause\x12\x16.simulation.EmptyParam\x1a\x14.simulation.Response\"\x00\x12\x41\n\nCreateBody\x12\x1b.simulation.CreateBodyParam\x1a\x14.simulation.Response\"\x00\x12\x45\n\x0c\x43reatePlayer\x12\x1d.simulation.CreatePlayerParam\x1a\x14.simulation.Response\"\x00\x12Q\n\x14InitializePopulation\x12!.simulation.CreatePopulationParam\x1a\x14.simulation.Response\"\x00\x12\x41\n\nUpdateBody\x12\x1b.simulation.UpdateBodyParam\x1a\x14.simulation.Response\"\x00\x12\x41\n\nDeleteBody\x12\x1b.simulation.DeleteBodyParam\x1a\x14.simulation.Response\"\x00\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'simulation_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _CREATEBODYPARAM._serialized_start=32
-  _CREATEBODYPARAM._serialized_end=127
-  _DELETEBODYPARAM._serialized_start=129
-  _DELETEBODYPARAM._serialized_end=158
-  _UPDATEBODYPARAM._serialized_start=161
-  _UPDATEBODYPARAM._serialized_end=294
-  _EMPTYPARAM._serialized_start=296
-  _EMPTYPARAM._serialized_end=308
-  _RESPONSE._serialized_start=310
-  _RESPONSE._serialized_end=338
-  _SIMULATION._serialized_start=341
-  _SIMULATION._serialized_end=724
+  _CREATEPOPULATIONPARAM._serialized_start=32
+  _CREATEPOPULATIONPARAM._serialized_end=119
+  _CREATEPLAYERPARAM._serialized_start=121
+  _CREATEPLAYERPARAM._serialized_end=246
+  _CREATEBODYPARAM._serialized_start=248
+  _CREATEBODYPARAM._serialized_end=343
+  _DELETEBODYPARAM._serialized_start=345
+  _DELETEBODYPARAM._serialized_end=374
+  _UPDATEBODYPARAM._serialized_start=377
+  _UPDATEBODYPARAM._serialized_end=510
+  _EMPTYPARAM._serialized_start=512
+  _EMPTYPARAM._serialized_end=524
+  _RESPONSE._serialized_start=526
+  _RESPONSE._serialized_end=554
+  _SIMULATION._serialized_start=557
+  _SIMULATION._serialized_end=1094
 # @@protoc_insertion_point(module_scope)

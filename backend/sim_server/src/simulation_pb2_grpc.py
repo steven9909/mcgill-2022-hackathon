@@ -34,6 +34,16 @@ class SimulationStub(object):
                 request_serializer=simulation__pb2.CreateBodyParam.SerializeToString,
                 response_deserializer=simulation__pb2.Response.FromString,
                 )
+        self.CreatePlayer = channel.unary_unary(
+                '/simulation.Simulation/CreatePlayer',
+                request_serializer=simulation__pb2.CreatePlayerParam.SerializeToString,
+                response_deserializer=simulation__pb2.Response.FromString,
+                )
+        self.InitializePopulation = channel.unary_unary(
+                '/simulation.Simulation/InitializePopulation',
+                request_serializer=simulation__pb2.CreatePopulationParam.SerializeToString,
+                response_deserializer=simulation__pb2.Response.FromString,
+                )
         self.UpdateBody = channel.unary_unary(
                 '/simulation.Simulation/UpdateBody',
                 request_serializer=simulation__pb2.UpdateBodyParam.SerializeToString,
@@ -73,6 +83,18 @@ class SimulationServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CreatePlayer(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def InitializePopulation(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def UpdateBody(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -106,6 +128,16 @@ def add_SimulationServicer_to_server(servicer, server):
             'CreateBody': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateBody,
                     request_deserializer=simulation__pb2.CreateBodyParam.FromString,
+                    response_serializer=simulation__pb2.Response.SerializeToString,
+            ),
+            'CreatePlayer': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreatePlayer,
+                    request_deserializer=simulation__pb2.CreatePlayerParam.FromString,
+                    response_serializer=simulation__pb2.Response.SerializeToString,
+            ),
+            'InitializePopulation': grpc.unary_unary_rpc_method_handler(
+                    servicer.InitializePopulation,
+                    request_deserializer=simulation__pb2.CreatePopulationParam.FromString,
                     response_serializer=simulation__pb2.Response.SerializeToString,
             ),
             'UpdateBody': grpc.unary_unary_rpc_method_handler(
@@ -192,6 +224,40 @@ class Simulation(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/simulation.Simulation/CreateBody',
             simulation__pb2.CreateBodyParam.SerializeToString,
+            simulation__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreatePlayer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/simulation.Simulation/CreatePlayer',
+            simulation__pb2.CreatePlayerParam.SerializeToString,
+            simulation__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def InitializePopulation(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/simulation.Simulation/InitializePopulation',
+            simulation__pb2.CreatePopulationParam.SerializeToString,
             simulation__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
