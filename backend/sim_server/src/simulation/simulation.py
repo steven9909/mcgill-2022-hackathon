@@ -22,6 +22,9 @@ class Simulator:
 
     def __init__(self):
         self.redis = RedisDb()
+        self.population = None
+        self.start_time = None
+        self.population_bodies = None
 
     def _calculate_next_pos(self, body: Body, others: List[Body], d_t: int):
         """
@@ -54,8 +57,10 @@ class Simulator:
         return (body.id, final_pos, final_vel)
 
     def _simulate_agents(self, bodies: List[Body]):
-        next_sim = []
+        if self.population_bodies is None:
+            return
 
+        next_sim = []
         for i, agent_body in enumerate(self.population_bodies):
             next_pos = self._calculate_next_pos(agent_body, bodies, self.d_t)
             x = next_pos[1][0]
@@ -112,11 +117,11 @@ class Simulator:
 
             if self.kill_event.is_set():
                 break
-
+            
             if len(self.bodies) <= 1 and self.population is None:
                 self.unpause_event.clear()
 
-            if (time.time_ns() - self.start_time)//1000000 > self.timeout:
+            if self.start_time is not None and (time.time_ns() - self.start_time)//1000000 > self.timeout:
                 self._reset_population()
                 continue
 
@@ -244,6 +249,10 @@ class Simulator:
         self.kill_event.set()
         self.is_stopped = True
 
+sim = Simulator()
+sim.start([Body(1, 2, 3, 4, 5, 6)])
+
+sim.stop()
 
 """
 G = 6.67e-11                 

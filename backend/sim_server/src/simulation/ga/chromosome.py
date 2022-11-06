@@ -1,4 +1,4 @@
-from math import sqrt, abs, pi
+import math
 import random
 
 class Chromosome:
@@ -52,4 +52,4 @@ class Chromosome:
         else:
             d_r = 1 - (2 * (1 - u)) * (1 / (1 + n_m))
             self.force = self.force + d_r * (Chromosome.FORCE_LIMIT - self.force)
-            self.angle = self.angle + d_r * (2 * pi - self.angle)
+            self.angle = self.angle + d_r * (2 * math.pi - self.angle)
