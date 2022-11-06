@@ -40,7 +40,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
     while True:
-        datas = redis.get_bodies([1, 2, 3])
+        datas = redis.get_bodies([-1, 1, 2, 3])
        
         await websocket.send_json([{
             "bodyId": i,

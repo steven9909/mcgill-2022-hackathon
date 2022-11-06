@@ -12,7 +12,7 @@ import time
 
 class Simulator:
     G = 6.67e-11  # Gravitational constant
-    SIM_T_D = 240  # Default simulation time step
+    SIM_T_D = 360  # Default simulation time step
 
     bodies = []
     g_constants = dict()
@@ -24,7 +24,7 @@ class Simulator:
         self.redis = RedisDb()
         self.population = None
         self.start_time = None
-        self.population_bodies = None
+        self.population_bodies = []
         self.player_body = None
         self.d_t = Simulator.SIM_T_D
 
@@ -61,19 +61,18 @@ class Simulator:
         return (body.id, final_pos, final_vel)
 
     def _simulate_agents(self, bodies: List[Body]):
-        if self.population_bodies is None:
-            return []
-
+       
         next_sim = []
         to_calculate = self.population_bodies
+        
         if self.player_body is not None:
-            to_calculate.append(self.player_body)
+            to_calculate = to_calculate + [self.player_body]
             
-        for i, agent_body in enumerate(self.population_bodies):
+        for i, agent_body in enumerate(to_calculate):
             next_pos = self._calculate_next_pos(agent_body, bodies, self.d_t)
             x = next_pos[1][0]
             y = next_pos[1][1]
-            if i < len(self.population.chromosomes):
+            if self.population is not None and i < len(self.population.chromosomes):
                 self.population.chromosomes[i].update_fitness(x, self.end_x, y, self.end_y)
             agent_body.pos = next_pos[1]
             agent_body.vel = next_pos[2]
@@ -167,6 +166,7 @@ class Simulator:
 
             self.population_bodies.append(Body(-2-i, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
 
+
         self.start_time = time.time_ns()
 
         self.resume()
@@ -174,6 +174,7 @@ class Simulator:
     def add_player(self, start_x, start_y, end_x, end_y, force: float, angle: float, timeout = 120, agent_mass = 50, auto_resume: bool = False):
         if self.is_stopped:
             return
+
         self.pause() 
 
         self.start_x = start_x
@@ -187,6 +188,12 @@ class Simulator:
         v_y = (force * math.sin(angle) / agent_mass) * self.d_t
 
         self.player_body = Body(-1, agent_mass, start_x, start_y, v_x, v_y)
+
+        for body in self.bodies:
+            constant = Simulator.G * agent_mass * body.mass
+            self.g_constants[(-1, body.id)] = constant
+            self.g_constants[(body.id, -1)] = constant
+
         if auto_resume:
             self.resume()
 
@@ -286,7 +293,7 @@ class Simulator:
         self.resume()
         self.population = None
         self.start_time = None
-        self.population_bodies = None
+        self.population_bodies.clear()
         self.is_stopped = True
         self.is_started = False
         self.g_constants.clear()
@@ -307,7 +314,7 @@ xvs,yvs = 0,0
 
 sim = Simulator()
 sim.start([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs), Body(3, Mm, xm, ym, xvm, yvm)])
-sim.add_player(0, 0, 100, 100, 50, 2, timeout=3)
+sim.add_player(2*1.5e11, 0, 1, math.pi, 50, 2, timeout=3)
 
 sim.resume()
 """
