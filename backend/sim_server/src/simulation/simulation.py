@@ -25,6 +25,8 @@ class Simulator:
         self.population = None
         self.start_time = None
         self.population_bodies = None
+        self.player_body = None
+        self.d_t = Simulator.SIM_T_D
 
     def _calculate_next_pos(self, body: Body, others: List[Body], d_t: int):
         """
@@ -47,8 +49,10 @@ class Simulator:
                 diff = body.pos - other.pos
 
                 r = (diff[0] ** 2 + diff[1] ** 2) ** 1.5
-
-                force = -(self.g_constants[(other.id, body.id)] / r) * diff
+                id = body.id
+                if body.id <= -1:
+                    id = -1
+                force = -(self.g_constants[(other.id, id)] / r) * diff
                 resultant_force += force
 
         final_vel = body.vel + resultant_force * d_t / body.mass
@@ -58,14 +62,19 @@ class Simulator:
 
     def _simulate_agents(self, bodies: List[Body]):
         if self.population_bodies is None:
-            return
+            return []
 
         next_sim = []
+        to_calculate = self.population_bodies
+        if self.player_body is not None:
+            to_calculate.append(self.player_body)
+            
         for i, agent_body in enumerate(self.population_bodies):
             next_pos = self._calculate_next_pos(agent_body, bodies, self.d_t)
             x = next_pos[1][0]
             y = next_pos[1][1]
-            self.population.chromosomes[i].update_fitness(x, self.end_x, y, self.end_y)
+            if i < len(self.population.chromosomes):
+                self.population.chromosomes[i].update_fitness(x, self.end_x, y, self.end_y)
             agent_body.pos = next_pos[1]
             agent_body.vel = next_pos[2]
             next_sim.append(next_pos)
@@ -156,13 +165,33 @@ class Simulator:
             v_x = (chromosome.force * math.cos(chromosome.angle) / self.agent_mass) * self.d_t
             v_y = (chromosome.force * math.sin(chromosome.angle) / self.agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-1-i, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
+            self.population_bodies.append(Body(-2-i, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
 
         self.start_time = time.time_ns()
+
         self.resume()
 
-    def initialize_population(self, start_x, start_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50):
-        if self.is_stopped or not self.is_started:
+    def add_player(self, start_x, start_y, end_x, end_y, force: float, angle: float, timeout = 120, agent_mass = 50, auto_resume: bool = False):
+        if self.is_stopped:
+            return
+        self.pause() 
+
+        self.start_x = start_x
+        self.start_y = start_y
+        self.end_x = end_x
+        self.end_y = end_y
+        self.timeout = timeout
+        self.agent_mass = agent_mass
+
+        v_x = (force * math.cos(angle) / agent_mass) * self.d_t
+        v_y = (force * math.sin(angle) / agent_mass) * self.d_t
+
+        self.player_body = Body(-1, agent_mass, start_x, start_y, v_x, v_y)
+        if auto_resume:
+            self.resume()
+
+    def initialize_population(self, start_x, start_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50, auto_resume: bool = False):
+        if self.is_stopped:
             return
         self.pause()
 
@@ -182,7 +211,7 @@ class Simulator:
             v_x = (chromosome.force * math.cos(chromosome.angle) / agent_mass) * self.d_t
             v_y = (chromosome.force * math.sin(chromosome.angle) / agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-1-i, agent_mass, start_x, start_y, v_x, v_y))
+            self.population_bodies.append(Body(-2-i, agent_mass, start_x, start_y, v_x, v_y))
 
         for body in self.bodies:
             constant = Simulator.G * agent_mass * body.mass
@@ -191,7 +220,8 @@ class Simulator:
 
         self.start_time = time.time_ns()
 
-        self.resume()
+        if auto_resume:
+            self.resume()
 
     def add_body(self, body: Body):
         if self.is_stopped:
@@ -277,7 +307,9 @@ xvs,yvs = 0,0
 
 sim = Simulator()
 sim.start([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs), Body(3, Mm, xm, ym, xvm, yvm)])
+sim.add_player(0, 0, 100, 100, 50, 2, timeout=3)
 
+sim.resume()
 """
 G = 6.67e-11                 
 Ms = 2.0e30         
