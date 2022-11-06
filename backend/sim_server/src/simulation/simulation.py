@@ -121,7 +121,7 @@ class Simulator:
             if len(self.bodies) <= 1 and self.population is None:
                 self.unpause_event.clear()
 
-            if self.start_time is not None and (time.time_ns() - self.start_time)//1000000 > self.timeout:
+            if self.start_time is not None and (time.time_ns() - self.start_time)//1000000000 > self.timeout:
                 self._reset_population()
                 continue
 
@@ -157,7 +157,6 @@ class Simulator:
     def initialize_population(self, start_x, start_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50):
         if self.is_stopped or not self.is_started:
             return
-
         self.pause()
 
         self.start_x = start_x
@@ -169,7 +168,7 @@ class Simulator:
 
         chromosomes = [Chromosome(random.random() * Chromosome.FORCE_LIMIT, random.random() * 2 * math.pi, start_x, end_x, start_y, end_y) for _ in range(num_populations)]
 
-        self.population = Population(chromosomes)
+        self.population = Population(chromosomes, start_x, start_y, end_x, end_y)
 
         self.population_bodies = []
         for chromosome in chromosomes:
@@ -250,9 +249,8 @@ class Simulator:
         self.is_stopped = True
 
 sim = Simulator()
-sim.start([Body(1, 2, 3, 4, 5, 6)])
-
-sim.stop()
+sim.start([Body(1, 2, 3, 4, 5, 6), Body(2, 5, 6, 7, 8, 9), Body(3, 10, 11, 12, 13, 14)])
+sim.initialize_population(0, 0, 10, 10)
 
 """
 G = 6.67e-11                 
