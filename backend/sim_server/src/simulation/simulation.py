@@ -8,12 +8,11 @@ import numpy as np
 import threading
 import math
 import time
-from fastapi import FastAPI, WebSocket
 
 
 class Simulator:
     G = 6.67e-11  # Gravitational constant
-    SIM_T_D = 24.0 * 60 * 60  # Default simulation time step
+    SIM_T_D = 240  # Default simulation time step
 
     bodies = []
     g_constants = dict()
@@ -153,11 +152,11 @@ class Simulator:
         self.population.reproduce()
 
         self.population_bodies.clear()
-        for chromosome in self.population.chromosomes:
+        for i, chromosome in enumerate(self.population.chromosomes):
             v_x = (chromosome.force * math.cos(chromosome.angle) / self.agent_mass) * self.d_t
             v_y = (chromosome.force * math.sin(chromosome.angle) / self.agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-1, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
+            self.population_bodies.append(Body(-1-i, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
 
         self.start_time = time.time_ns()
         self.resume()
@@ -179,11 +178,11 @@ class Simulator:
         self.population = Population(chromosomes, start_x, start_y, end_x, end_y)
 
         self.population_bodies = []
-        for chromosome in chromosomes:
+        for i, chromosome in enumerate(chromosomes):
             v_x = (chromosome.force * math.cos(chromosome.angle) / agent_mass) * self.d_t
             v_y = (chromosome.force * math.sin(chromosome.angle) / agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-1, agent_mass, start_x, start_y, v_x, v_y))
+            self.population_bodies.append(Body(-1-i, agent_mass, start_x, start_y, v_x, v_y))
 
         for body in self.bodies:
             constant = Simulator.G * agent_mass * body.mass
@@ -277,7 +276,7 @@ xs,ys = 0,0
 xvs,yvs = 0,0
 
 sim = Simulator()
-sim.start([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs)])
+sim.start([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs), Body(3, Mm, xm, ym, xvm, yvm)])
 
 """
 G = 6.67e-11                 
