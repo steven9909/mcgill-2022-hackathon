@@ -8,6 +8,7 @@ import numpy as np
 import threading
 import math
 import time
+from fastapi import FastAPI, WebSocket
 
 
 class Simulator:
@@ -53,7 +54,7 @@ class Simulator:
 
         final_vel = body.vel + resultant_force * d_t / body.mass
         final_pos = body.pos + final_vel * d_t
-
+        
         return (body.id, final_pos, final_vel)
 
     def _simulate_agents(self, bodies: List[Body]):
@@ -66,6 +67,8 @@ class Simulator:
             x = next_pos[1][0]
             y = next_pos[1][1]
             self.population.chromosomes[i].update_fitness(x, self.end_x, y, self.end_y)
+            agent_body.pos = next_pos[1]
+            agent_body.vel = next_pos[2]
             next_sim.append(next_pos)
         
         return next_sim
@@ -80,7 +83,11 @@ class Simulator:
         next_sim = []
 
         for body in bodies:
-            next_sim.append(self._calculate_next_pos(body, bodies, self.d_t))
+            next_body = self._calculate_next_pos(body, bodies, self.d_t)
+            next_sim.append(next_body)
+         
+            body.pos = next_body[1]
+            body.vel = next_body[2]
 
         return next_sim
 
@@ -125,7 +132,7 @@ class Simulator:
             if self.start_time is not None and (time.time_ns() - self.start_time)//1000000000 > self.timeout:
                 self._reset_population()
                 continue
-            print("simming")
+    
             self.redis.publish_next_bodies(self._simulate_bodies(self.bodies))
             self.redis.publish_next_agents(self._simulate_agents(self.bodies))
 
@@ -256,14 +263,21 @@ class Simulator:
         self.g_constants.clear()
         self.bodies.clear()
 
+Ms = 2.0e30         
+Mm = 6.39e23
+Me = 5.972e24   
+
+xe, ye = 1.0167*1.5e11, 0
+xve, yve = 0, 29290
+
+xm, ym = 1.5*1.5e11, 0
+xvm, yvm = 0, 24070
+
+xs,ys = 0,0
+xvs,yvs = 0,0
+
 sim = Simulator()
-sim.start([Body(1, 2, 3, 4, 5, 6), Body(2, 5, 6, 7, 8, 9), Body(3, 10, 11, 12, 13, 14)])
-sim.initialize_population(0, 0, 10, 10)
-
-sim.stop()
-
-sim.start([Body(1, 2, 3, 4, 5, 6), Body(2, 5, 6, 7, 8, 9), Body(3, 10, 11, 12, 13, 14)])
-
+sim.start([Body(1, Me, xe, ye, xve, yve), Body(2, Ms, xs, ys, xvs, yvs)])
 
 """
 G = 6.67e-11                 
