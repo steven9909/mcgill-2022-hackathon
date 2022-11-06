@@ -85,9 +85,10 @@ class Simulator:
         return next_sim
 
     def start(self, bodies: List[Body], d_t=SIM_T_D):
-        if self.is_stopped or self.is_started:
+        if self.is_started:
             return
 
+        self.is_stopped = False
         self.is_started = True
 
         self.d_t = d_t
@@ -124,7 +125,7 @@ class Simulator:
             if self.start_time is not None and (time.time_ns() - self.start_time)//1000000000 > self.timeout:
                 self._reset_population()
                 continue
-
+            print("simming")
             self.redis.publish_next_bodies(self._simulate_bodies(self.bodies))
             self.redis.publish_next_agents(self._simulate_agents(self.bodies))
 
@@ -244,13 +245,25 @@ class Simulator:
     def stop(self):
         if not self.is_started:
             return
-
+            
         self.kill_event.set()
+        self.resume()
+        self.population = None
+        self.start_time = None
+        self.population_bodies = None
         self.is_stopped = True
+        self.is_started = False
+        self.g_constants.clear()
+        self.bodies.clear()
 
 sim = Simulator()
 sim.start([Body(1, 2, 3, 4, 5, 6), Body(2, 5, 6, 7, 8, 9), Body(3, 10, 11, 12, 13, 14)])
 sim.initialize_population(0, 0, 10, 10)
+
+sim.stop()
+
+sim.start([Body(1, 2, 3, 4, 5, 6), Body(2, 5, 6, 7, 8, 9), Body(3, 10, 11, 12, 13, 14)])
+
 
 """
 G = 6.67e-11                 
