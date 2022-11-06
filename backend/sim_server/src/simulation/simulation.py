@@ -197,31 +197,26 @@ class Simulator:
         if auto_resume:
             self.resume()
 
-    def initialize_population(self, start_x, start_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50, auto_resume: bool = False):
+    def initialize_population(self, timeout = 120, num_populations = 100, auto_resume: bool = False):
         if self.is_stopped:
             return
         self.pause()
 
-        self.start_x = start_x
-        self.start_y = start_y
-        self.end_x = end_x
-        self.end_y = end_y
         self.timeout = timeout
-        self.agent_mass = agent_mass
 
-        chromosomes = [Chromosome(random.random() * Chromosome.FORCE_LIMIT, random.random() * 2 * math.pi, start_x, end_x, start_y, end_y) for _ in range(num_populations)]
+        chromosomes = [Chromosome(random.random() * Chromosome.FORCE_LIMIT, random.random() * 2 * math.pi, self.start_x, self.end_x, self.start_y, self.end_y) for _ in range(num_populations)]
 
-        self.population = Population(chromosomes, start_x, start_y, end_x, end_y)
+        self.population = Population(chromosomes, self.start_x, self.start_y, self.end_x, self.end_y)
 
         self.population_bodies = []
         for i, chromosome in enumerate(chromosomes):
-            v_x = (chromosome.force * math.cos(chromosome.angle) / agent_mass) * self.d_t
-            v_y = (chromosome.force * math.sin(chromosome.angle) / agent_mass) * self.d_t
+            v_x = (chromosome.force * math.cos(chromosome.angle) / self.agent_mass) * self.d_t
+            v_y = (chromosome.force * math.sin(chromosome.angle) / self.agent_mass) * self.d_t
 
-            self.population_bodies.append(Body(-2-i, agent_mass, start_x, start_y, v_x, v_y))
+            self.population_bodies.append(Body(-2-i, self.agent_mass, self.start_x, self.start_y, v_x, v_y))
 
         for body in self.bodies:
-            constant = Simulator.G * agent_mass * body.mass
+            constant = Simulator.G * self.agent_mass * body.mass
             self.g_constants[(-1, body.id)] = constant
             self.g_constants[(body.id, -1)] = constant
 
