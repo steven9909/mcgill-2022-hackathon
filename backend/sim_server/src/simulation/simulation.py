@@ -7,6 +7,7 @@ import random
 import numpy as np
 import threading
 import math
+import time
 
 
 class Simulator:
@@ -111,6 +112,10 @@ class Simulator:
             if len(self.bodies) <= 1 and self.population is None:
                 self.unpause_event.clear()
 
+            if (time.time_ns() - self.start_time)//1000000 > self.timeout:
+                self._reset_population()
+                continue
+
             self.redis.publish_next_bodies(self._simulate_bodies(self.bodies))
             self.redis.publish_next_agents(self._simulate_agents(self.bodies))
 
@@ -126,14 +131,32 @@ class Simulator:
 
         self.unpause_event.set()
 
+    def _reset_population(self):
+        self.pause()
+        self.population.reproduce()
+
+        self.population_bodies.clear()
+        for chromosome in self.population.chromosomes:
+            v_x = (chromosome.force * math.cos(chromosome.angle) / self.agent_mass) * self.d_t
+            v_y = (chromosome.force * math.sin(chromosome.angle) / self.agent_mass) * self.d_t
+
+            self.population_bodies.append(Body(-1, self.agent_mass, self.starting_x, self.starting_y, v_x, v_y))
+
+        self.start_time = time.time_ns()
+        self.resume()
+
     def initialize_population(self, starting_x, starting_y, end_x, end_y, timeout = 120, num_populations = 100, agent_mass = 50):
         if self.is_stopped or not self.is_started:
             return
 
         self.pause()
 
+        self.starting_x = starting_x
+        self.starting_y = starting_y
         self.end_x = end_x
         self.end_y = end_y
+        self.timeout = timeout
+        self.agent_mass = agent_mass
 
         chromosomes = [Chromosome(random.random() * Chromosome.FORCE_LIMIT, random.random() * 2 * math.pi) for _ in range(num_populations)]
 
@@ -151,6 +174,8 @@ class Simulator:
             self.g_constants[(-1, body.id)] = constant
             self.g_constants[(body.id, -1)] = constant
 
+        self.start_time = time.time_ns()
+
         self.resume()
 
     def add_body(self, body: Body):
@@ -164,6 +189,11 @@ class Simulator:
             constant = Simulator.G * other.mass * body.mass
             self.g_constants[(body.id, other.id)] = constant
             self.g_constants[(other.id, body.id)] = constant
+
+        if self.population_bodies is not None and len(self.population_bodies) >= 1:
+            constant = Simulator.G * self.agent_mass * body.mass
+            self.g_constants[(body.id, -1)] = constant
+            self.g_constants[(-1, body.id)] = constant
 
         self.bodies.append(body)
 
