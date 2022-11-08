@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import "./App.css";
 import { socket } from "./services/websockets";
@@ -59,7 +59,6 @@ const App = () => {
 
     // configure scene
     scene.add(pointLight);
-    // scene.background = new THREE.TextureLoader().load("/backgroudTexture.jpeg");
 
     // configure camera
     camera.position.set(0, 0, 768);
@@ -90,15 +89,6 @@ const App = () => {
       for (const bodyState of bodyStates) {
         const geometry = new THREE.SphereGeometry(4, 32, 16);
         const material = new THREE.MeshLambertMaterial();
-        // const material =
-        //   bodyState.bodyId < 0
-        //     ? new THREE.MeshLambertMaterial()
-        //     : new THREE.MeshBasicMaterial({
-        //         map: new THREE.TextureLoader().load(
-        //           textureMap[bodyState.bodyId]
-        //         ),
-        //       });
-
         const sphere = new THREE.Mesh(geometry, material);
         scene.add(sphere);
         spheres[bodyState.bodyId] = sphere;
