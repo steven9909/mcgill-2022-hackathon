@@ -39,9 +39,9 @@ async def websocket_endpoint(websocket: WebSocket):
         if message["type"] != "message":
             continue
 
-        await websocket.send_json(json.loads(message["data"]))
+        await websocket.send_text(message["data"])
 
 
 if __name__ == "__main__":
-    host, port = os.environ.get("API_SERVER:URL").split(":")
-    uvicorn.run("main:app", host=host, port=port)
+    host, port = os.environ.get("API_SERVER_URL").split(":")
+    uvicorn.run("main:app", host=host, port=int(port))
