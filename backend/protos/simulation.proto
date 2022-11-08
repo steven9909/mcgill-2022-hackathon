@@ -2,9 +2,7 @@ syntax = "proto3";
 
 service Simulation {
     rpc Start(Empty) returns (Empty) {}
-    rpc Pause(Empty) returns (Empty) {}
     rpc Stop(Empty) returns (Empty) {}
-    rpc Reset(Empty) returns (Empty) {}
     rpc CreateBody(CreateBodyRequest) returns (Empty) {}
     rpc UpdateBody(DeleteBodyRequest) returns (Empty) {}
     rpc DeleteBody(UpdateBodyRequest) returns (Empty) {}
@@ -22,7 +20,7 @@ message Velocity {
 
 message CreateBodyRequest {
     int32 id = 1;
-    int32 mass = 2;
+    float mass = 2;
     Position position = 3;
     Velocity velocity = 4;
 }
