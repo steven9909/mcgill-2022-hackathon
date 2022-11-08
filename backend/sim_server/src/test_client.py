@@ -1,4 +1,5 @@
 import json
+import os
 
 import grpc
 import redis
@@ -7,7 +8,9 @@ import simulation_pb2_grpc
 
 
 def run():
-    db = redis.StrictRedis("localhost", 6379, charset="utf-8", decode_responses=True)
+    db = redis.StrictRedis(
+        *os.environ.get("REDIS_URL").split(":"), charset="utf-8", decode_responses=True
+    )
 
     with grpc.insecure_channel("localhost:50051") as channel:
         stub = simulation_pb2_grpc.SimulationStub(channel)

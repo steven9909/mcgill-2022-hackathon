@@ -1,10 +1,11 @@
+import json
+import os
 import threading
 from typing import Dict
 
 import numpy as np
 import redis
 from models.body import Body
-import json
 
 
 class Simulator:
@@ -14,7 +15,9 @@ class Simulator:
     def __init__(self):
 
         self.db = redis.StrictRedis(
-            "localhost", 6379, charset="utf-8", decode_responses=True
+            *os.environ.get("REDIS_URL").split(":"),
+            charset="utf-8",
+            decode_responses=True
         )
         self.bodies: Dict[int, Body] = {}
         self.bodies_access_lock = threading.Lock()
@@ -64,6 +67,7 @@ class Simulator:
         self.start_event.clear()
 
     def start(self):
+
         self.stop_event.clear()
 
         if not self.start_event.is_set():

@@ -1,20 +1,14 @@
-from database.redis import RedisDb
+import json
+import os
+
+import redis
+import uvicorn
 from fastapi import FastAPI, WebSocket
-from routes.get import get_route
-from routes.post import post_route
-from routes.delete import delete_route
-from routes.put import put_route
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-origins = [
-    "http://localhost.tiangolo.com",
-    "https://localhost.tiangolo.com",
-    "http://localhost:5173",
-    "http://localhost:8080",
-    "http://10.0.0.239:5173",
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,29 +18,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(get_route)
-app.include_router(post_route)
-app.include_router(delete_route)
-app.include_router(put_route)
+# app.include_router(get_route)
+# app.include_router(post_route)
+# app.include_router(delete_route)
+# app.include_router(put_route)
 
-redis = RedisDb()
+db = redis.StrictRedis(
+    *os.environ.get("REDIS_URL").split(":"), charset="utf-8", decode_responses=True
+)
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
-@app.websocket("/ws")
+@app.websocket("/bodies")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    
-    while True:
-        datas = redis.get_bodies([-1, 1, 2, 3])
-       
-        await websocket.send_json([{
-            "bodyId": i,
-            "positionX": data[0].decode('utf8'),
-            "positionY": data[1].decode('utf8'),
-            "velocityX": data[2].decode('utf8'),
-            "velocityY": data[3].decode('utf8'),
-        } for i, data in enumerate(datas)])
 
+    sub = db.pubsub()
+    sub.subscribe("bodies")
+
+    for message in sub.listen():
+        if message["type"] != "message":
+            continue
+
+        await websocket.send_json(json.loads(message["data"]))
+
+
+if __name__ == "__main__":
+    host, port = os.environ.get("API_SERVER:URL").split(":")
+    uvicorn.run("main:app", host=host, port=port)
