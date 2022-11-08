@@ -1,16 +1,25 @@
 import math
 import random
 
+
 class Chromosome:
-    
+
     FORCE_LIMIT = 10000
 
-    def __init__(self, force: float, angle: float, start_x: float, end_x:float, start_y: float, end_y: float):
-        """ 
+    def __init__(
+        self,
+        force: float,
+        angle: float,
+        start_x: float,
+        end_x: float,
+        start_y: float,
+        end_y: float,
+    ):
+        """
         Constructor for chromosome
 
         Args:
-            force (float): force in newtons 
+            force (float): force in newtons
             angle (float): angle in radians relative to positive x axis
         """
 
@@ -34,9 +43,9 @@ class Chromosome:
         Returns:
             _type_: _description_
         """
-        return abs(end_y - y)**2 + abs(end_x - x)**2
+        return abs(end_y - y) ** 2 + abs(end_x - x) ** 2
 
-    def mutate(self, n_m = 20):
+    def mutate(self, n_m=20):
         """
         Perform polynomial mutation
 
@@ -46,7 +55,7 @@ class Chromosome:
         u = random.random()
 
         if u <= 0.5:
-            d_l = (2 * u)**(1 / (1 + n_m)) - 1
+            d_l = (2 * u) ** (1 / (1 + n_m)) - 1
             self.force = self.force + d_l * self.force
             self.angle = self.angle + d_l * self.angle
         else:

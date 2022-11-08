@@ -1,39 +1,41 @@
 syntax = "proto3";
 
-package simulation;
-
 service Simulation {
-    rpc Start(EmptyParam) returns (Response) {}
-    rpc Stop(EmptyParam) returns (Response) {}
-    rpc Pause(EmptyParam) returns (Response) {}
-    rpc CreateBody(CreateBodyParam) returns (Response) {}
-    rpc UpdateBody(UpdateBodyParam) returns (Response) {}
-    rpc DeleteBody(DeleteBodyParam) returns (Response) {}
+    rpc Start(Empty) returns (Empty) {}
+    rpc Pause(Empty) returns (Empty) {}
+    rpc Stop(Empty) returns (Empty) {}
+    rpc Reset(Empty) returns (Empty) {}
+    rpc CreateBody(CreateBodyRequest) returns (Empty) {}
+    rpc UpdateBody(DeleteBodyRequest) returns (Empty) {}
+    rpc DeleteBody(UpdateBodyRequest) returns (Empty) {}
 }
 
-message CreateBodyParam {
+message Position {
+    float x = 1;
+    float y = 2;
+}
+
+message Velocity {
+    float x = 1;
+    float y = 2;
+}
+
+message CreateBodyRequest {
     int32 id = 1;
     int32 mass = 2;
-    float p_x = 3;
-    float p_y = 4;
-    float v_x = 5;
-    float v_y = 6;
+    Position position = 3;
+    Velocity velocity = 4;
 }
 
-message DeleteBodyParam {
+message DeleteBodyRequest {
     int32 id = 1;
 }
 
-message UpdateBodyParam {
+message UpdateBodyRequest {
     int32 id = 1;
-    optional float p_x = 2;
-    optional float p_y = 3;
-    optional float v_x = 4;
-    optional float v_y = 5;
+    optional float mass = 2;
+    optional Position position = 3;
+    optional Velocity velocity = 4;
 }
 
-message EmptyParam {}
-
-message Response {
-    bool received = 1;
-}
+message Empty {}
