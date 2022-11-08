@@ -17,10 +17,6 @@ class SimulationService(simulation_pb2_grpc.SimulationServicer):
         self.simulator.start()
         return simulation_pb2.Empty()
 
-    def Pause(self, request, context):
-        self.simulator.start()
-        return simulation_pb2.Empty()
-
     def Stop(self, request, context):
         self.simulator.stop()
         return simulation_pb2.Empty()
